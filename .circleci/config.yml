@@ -195,6 +195,8 @@ jobs:
           name: Delete front and back stacks if CF fails
           when: on_fail
           command: |
+            sudo apt-get update
+            sudo apt-get install less
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
 ##
@@ -350,8 +352,6 @@ workflows:
               only: [master]
           context:
             - AWS
-          environment:
-            AWS_PAGER: ""
 ##      - configure-infrastructure:
 ##          requires: [deploy-infrastructure]
 ##      - run-migrations:
