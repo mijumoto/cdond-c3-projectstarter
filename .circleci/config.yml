@@ -350,6 +350,8 @@ workflows:
               only: [master]
           context:
             - AWS
+          environment:
+            AWS_PAGER: ""
 ##      - configure-infrastructure:
 ##          requires: [deploy-infrastructure]
 ##      - run-migrations:
