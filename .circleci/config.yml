@@ -181,6 +181,8 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
+            sudo apt-get update
+            sudo apt-get install less
             aws ec2 describe-instances
               --filters \
               "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
@@ -195,8 +197,6 @@ jobs:
           name: Delete front and back stacks if CF fails
           when: on_fail
           command: |
-            sudo apt-get update
-            sudo apt-get install less
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
 ##
