@@ -183,6 +183,10 @@ jobs:
           command: |
             aws ec2 describe-instances --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[*].Instances[*].[PrivateIpAddress]' --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"
+      - run:
+          name: Fix for tar utility is not present in this image but it is required. Please install it to have workflow workspace capability
+          command: |
+            yum install -y tar
       - persist_to_workspace:
           root: ~/
           paths:
