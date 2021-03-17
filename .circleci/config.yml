@@ -183,8 +183,7 @@ jobs:
           command: |
             export WORKFLOWID=${CIRCLE_WORKFLOW_ID:0:7}
             aws ec2 describe-instances
-              --filters \
-              "Name=tag:Name,Values=backend-${WORKFLOWID}" \
+              --filters Name=tag:Name,Values=backend-${WORKFLOWID} \
               --query 'Reservations[*].Instances[*].[PrivateIpAddress]' \
               --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"
