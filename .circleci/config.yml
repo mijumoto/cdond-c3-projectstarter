@@ -237,11 +237,7 @@ jobs:
           command: |
             cd backend
             npm install
-            npm run migrations
-      - run:
-          name: Send migration results to memstash
-          command: |
-            bash -c 'if npm run migrations | grep "has been executed successfully"; then MIGRATION=1; else MIGRATION=0; fi; curl -H "Content-Type: text/plain" -H "token: 03007ab5-a4d8-468e-a097-464deb22565a" --request PUT --data "$MIGRATION" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}'
+            ash -c 'if npm run migrations | grep "has been executed successfully"; then MIGRATION=1; else MIGRATION=0; fi; curl -H "Content-Type: text/plain" -H "token: 03007ab5-a4d8-468e-a097-464deb22565a" --request PUT --data "$MIGRATION" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}'
       - run:
           name: Revert migrations
           when: on_fail
