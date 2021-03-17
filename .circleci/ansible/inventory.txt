@@ -1,2 +1,2 @@
 [web]
-54.91.138.60
+ec2-54-91-138-60.compute-1.amazonaws.com

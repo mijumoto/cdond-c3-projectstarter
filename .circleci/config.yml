@@ -190,8 +190,8 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            aws ec2 describe-instances --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text >> .circleci/ansible/inventory.txt
-            cat .circleci/ansible/inventory.txt | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"
+            aws ec2 describe-instances --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[*].Instances[*].[PublicDnsName]' --output text >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"
             cat .circleci/ansible/inventory.txt
       - run:
           name: Fix for tar and gzip utility are not present in this image but it is required. Please install it to have workflow workspace capability
@@ -227,23 +227,27 @@ jobs:
             cat .circleci/ansible/inventory.txt
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
 
-##  run-migrations:
-##    docker:
-##      # Docker image here that supports NodeJS
-##    steps:
-##      # Checkout code from git
-##      - run:
-##          name: Run migrations
-##          command: |
-##            # Your code here
-##            exit 1
-##      - run:
-##          name: Send migration results to memstash
-##          command: |
-##            # Your code here
-##            exit 1
-##     # Here's where you will add some code to rollback on failure      
-##
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm run migrations
+      - run:
+          name: Send migration results to memstash
+          command: |
+            bash -c 'if npm run migrations | grep "has been executed successfully"; then MIGRATION=1; else MIGRATION=0; fi; curl -H "Content-Type: text/plain" -H "token: 03007ab5-a4d8-468e-a097-464deb22565a" --request PUT --data "$MIGRATION" https://api.memstash.io/values/migration'
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            cd backend
+            npm run migrations:revert
+
 ##  deploy-frontend:
 ##    docker:
 ##      # Docker image here that supports AWS CLI
@@ -362,8 +366,8 @@ workflows:
 ##            - AWS
       - configure-infrastructure
 ##          requires: [deploy-infrastructure]
-##      - run-migrations:
-##          requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
 ##      - deploy-frontend:
 ##          requires: [run-migrations]
 ##      - deploy-backend:
