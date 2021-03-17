@@ -328,7 +328,6 @@ jobs:
 ##    docker:
 ##      # Docker image here
 ##    steps:
-            cd backend
 ##      # Checkout code from git
 ##      - run:
 ##          name: Get old stack workflow id
