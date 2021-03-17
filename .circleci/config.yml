@@ -165,23 +165,23 @@ jobs:
       - run:
           name: Ensure back-end infrastructure exists
           command: |
-            export WORKFLOWID=${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople \
-              --stack-name "uda-back-${WORKFLOWID}" \
-              --parameter-overrides ID="${WORKFLOWID}"
+              --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople \
-              --stack-name "uda-front-${WORKFLOWID}" \
-              --parameter-overrides ID="${WORKFLOWID}"
+              --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Add back-end ip to ansible inventory
           command: |
+            export WORKFLOWID=${CIRCLE_WORKFLOW_ID:0:7}
             aws ec2 describe-instances
               --filters \
               "Name=tag:Name,Values=backend-${WORKFLOWID}" \
