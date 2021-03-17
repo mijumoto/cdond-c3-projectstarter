@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.3.0
+  aws: amazon/aws-cli
 
 commands:
   notify-failure:
@@ -18,6 +19,15 @@ commands:
           event: pass
           custom: |
             {"blocks": [{"type": "section", "text": { "type": "mrkdwn", "text": "✅ Build Succeded #<$CIRCLE_BUILD_URL|$CIRCLE_BUILD_NUM> ($CIRCLE_BRANCH) of <https://$CIRCLE_REPOSITORY_URL|$CIRCLE_PROJECT_REPONAME>\n - $CIRCLE_USERNAME: $CIRCLE_TAG ($CIRCLE_SHA1)"}}]}
+
+  rollback:
+    description: Delete Stacks
+    steps:
+      - aws:
+          event: fail
+          custom: |
+            aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
 
 #  destroy-environment:
 #    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -181,7 +191,7 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            aws ec2 describe-instances --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[*].Instances[*].[PrivateIpAddress]' --output text >> .circleci/ansible/inventory.txt
+            aws ec2 describe-instances --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"
             cat .circleci/ansible/inventory.txt
       - run:
@@ -198,26 +208,26 @@ jobs:
           command: |
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
-##
-##  configure-infrastructure:
-##    docker:
-##      # Docker image here that supports Ansible
-##    steps:
-##      # Checkout code from git
-##      # Add ssh keys with fingerprint
-##      # attach workspace
-##      - run:
-##          name: Install dependencies
-##          command: |
-##            # Your code here
-##            exit 1
-##      - run:
-##          name: Configure server
-##          command: |
-##            # Your code here
-##            exit 1
-##      # Here's where you will add some code to rollback on failure      
-##
+
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["73:85:d9:b3:1c:c6:98:25:f5:f7:f7:b2:e2:81:92:b8"] 
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            ansible-playbook -i inventory.txt configure-server.yml
+      - rollback
+
 ##  run-migrations:
 ##    docker:
 ##      # Docker image here that supports NodeJS

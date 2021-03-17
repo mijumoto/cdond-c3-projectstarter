@@ -1,0 +1,33 @@
+---
+- name: Add environment variables
+  shell: "echo 'Setting env vars'"
+  environment:
+    ENVIRONMENT=production
+    TYPEORM_CONNECTION=postgres
+    TYPEORM_MIGRATIONS_DIR=./src/migrations
+    TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts
+    TYPEORM_HOST=pgdb.cbv7959kpsjz.us-east-1.rds.amazonaws.com
+    TYPEORM_PORT=5432
+    TYPEORM_USERNAME=postgres
+    TYPEORM_PASSWORD=password
+    TYPEORM_DATABASE=glee
+
+- name: "upgrade packages."
+  become: true
+  apt:
+    upgrade: "yes"
+
+- name: "install dependencies."
+  become: true
+  apt:
+    name: ["nodejs", "npm"]
+    state: latest
+    update_cache: yes
+
+- name: "install pm2"
+  become: true
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
