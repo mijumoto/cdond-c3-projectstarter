@@ -236,6 +236,7 @@ jobs:
           name: Run migrations
           command: |
             cd backend
+            npm install
             npm run migrations
       - run:
           name: Send migration results to memstash
@@ -245,7 +246,6 @@ jobs:
           name: Revert migrations
           when: on_fail
           command: |
-            cd backend
             npm run migrations:revert
 
 ##  deploy-frontend:
@@ -364,7 +364,7 @@ workflows:
 ##              only: [master]
 ##          context:
 ##            - AWS
-      - configure-infrastructure
+##      - configure-infrastructure
 ##          requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
