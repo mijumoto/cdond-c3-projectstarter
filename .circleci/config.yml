@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.3.0
-  aws: circleci/aws-cli@1.4.0
+  aws-cli: circleci/aws-cli@1.4.0
 
 commands:
   notify-failure:
@@ -22,7 +22,7 @@ commands:
   rollback:
     description: Delete Stacks
     steps:
-      - aws:
+      - aws-cli/default:
           event: fail
           custom: |
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
