@@ -225,7 +225,6 @@ jobs:
           name: Configure server
           command: |
             ansible-playbook -i inventory.txt configure-server.yml
-      - rollback
 
 ##  run-migrations:
 ##    docker:
