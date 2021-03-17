@@ -165,26 +165,26 @@ jobs:
       - run:
           name: Ensure back-end infrastructure exists
           command: |
+            export WORKFLOWID=${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople \
-              --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+              --stack-name "uda-back-${WORKFLOWID}" \
+              --parameter-overrides ID="${WORKFLOWID}"
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople \
-              --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+              --stack-name "uda-front-${WORKFLOWID}" \
+              --parameter-overrides ID="${WORKFLOWID}"
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            yum install less
             aws ec2 describe-instances
               --filters \
-              "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              "Name=tag:Name,Values=backend-${WORKFLOWID}" \
               --query 'Reservations[*].Instances[*].[PrivateIpAddress]' \
               --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"
