@@ -328,6 +328,7 @@ jobs:
 ##    docker:
 ##      # Docker image here
 ##    steps:
+            cd backend
 ##      # Checkout code from git
 ##      - run:
 ##          name: Get old stack workflow id
@@ -367,7 +368,7 @@ workflows:
 ##      - configure-infrastructure
 ##          requires: [deploy-infrastructure]
       - run-migrations:
-          requires: [configure-infrastructure]
+##          requires: [configure-infrastructure]
 ##      - deploy-frontend:
 ##          requires: [run-migrations]
 ##      - deploy-backend:
