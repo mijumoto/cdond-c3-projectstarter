@@ -292,7 +292,6 @@ jobs:
             cd backend
             npm install 
             npm run build
-            pwd
       - run:
           name: Configure server
           command: |
