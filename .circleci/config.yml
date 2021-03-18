@@ -278,7 +278,7 @@ jobs:
                     
   deploy-backend:
     docker:
-      - image: kkarunalladeva/ansible-nodejs-python-ubuntu1604
+      - image: nikolaik/python-nodejs:python3.7-nodejs14-alpine
     steps:
       - checkout
       - add_ssh_keys:
@@ -288,10 +288,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apt update
-            apt -y install software-properties-common
-            apt-add-repository --yes --update ppa:ansible/ansible
-            apt -y install ansible
+            apk add --update ansible
             cd backend
             npm install 
             npm run build
