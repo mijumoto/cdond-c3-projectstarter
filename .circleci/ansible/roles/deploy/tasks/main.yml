@@ -1,5 +1,5 @@
 ---
 - name: Copy files
   copy:
-      src: /project/backend/dist/
-      dest: /home/ubuntu/
+      src: "root/project/backend/dist/"
+      dest: "/home/ubuntu/"
