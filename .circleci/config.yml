@@ -313,7 +313,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            curl ${BACKEND_URL}
+            curl ${BACKEND_URL} | return 0
       - run:
           name: Frontend smoke test.
           command: |
