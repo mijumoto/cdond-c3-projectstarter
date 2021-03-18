@@ -310,7 +310,7 @@ jobs:
           name: Get backend url
           command: |
           echo 'test'
-##            BACKEND_URL=export API_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030/api/status"
+#            BACKEND_URL=export API_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030/api/status"
       - run:
           name: Backend smoke test.
           command: |
