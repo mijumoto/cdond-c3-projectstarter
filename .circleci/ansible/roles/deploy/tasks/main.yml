@@ -3,8 +3,11 @@
   block:
     - name: Copy and unarchive file
       ansible.builtin.unarchive:
-        src: "root/project/backend/dist.tar.gz"
+        src: "/root/project/backend/dist.tar.gz"
         dest: "/home/ubuntu/"
   rescue:
-    - name: Remove all files
+    - name: Rollback by removing all files
       shell: rm -rf /home/ubuntu/*
+
+    - name: Force a failure to stop build
+      ansible.builtin.command: /bin/false
