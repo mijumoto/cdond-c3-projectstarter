@@ -9,7 +9,7 @@ commands:
     description: Slack notification on failure
     steps:
       - slack/notify:
-          event: fail
+          event: pass
           custom: |
             {"blocks": [{"type": "section", "text": { "type": "mrkdwn", "text": "❌ $CIRCLE_JOB Failed in build #<$CIRCLE_BUILD_URL|$CIRCLE_BUILD_NUM> ($CIRCLE_BRANCH) of <https://$CIRCLE_REPOSITORY_URL|$CIRCLE_PROJECT_REPONAME>\n - $CIRCLE_USERNAME: $CIRCLE_TAG ($CIRCLE_SHA1)"}}]}
   notify-success:
@@ -66,8 +66,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: 
-            - frontend-build-{{ checksum "/frontend/package.json" }}
+          keys:
+            - frontend-build-{{ checksum "/home/circleci/project/frontend/package.json" }}
             - frontend-build-
       - run:
           name: Build front-end
@@ -79,7 +79,7 @@ jobs:
       - notify-failure
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-build-{{ checksum "/frontend/package.json" }}
+          key: frontend-build-{{ checksum "/home/circleci/project/frontend/package.json" }}
 
   build-backend:
     docker:
@@ -88,7 +88,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - backend-build-{{ checksum "/backend/package.json" }}
+            - backend-build-{{ checksum "/home/circleci/project/backend/package.json" }}
             - backend-build-
       - run:
           name: Back-end build
@@ -100,7 +100,7 @@ jobs:
       - notify-failure
       - save_cache:
           paths: [backend/node_modules]
-          key: backend-build-{{ checksum "/backend/package.json" }}
+          key: backend-build-{{ checksum "/home/circleci/project/backend/package.json" }}
 
   test-frontend:
     docker:
@@ -109,7 +109,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - frontend-build-{{ checksum "/frontend/package.json" }}
+            - frontend-build-{{ checksum "/home/circleci/project/frontend/package.json" }}
             - frontend-build-
       - run:
           name: Run frontend unit tests
@@ -125,7 +125,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - backend-build-{{ checksum "/backend/package.json" }}
+            - backend-build-{{ checksum "/home/circleci/project/backend/package.json" }}
             - backend-build-
       - run:
           name: Run backend unit tests
@@ -141,7 +141,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - frontend-build-{{ checksum "/frontend/package.json" }}
+            - frontend-build-{{ checksum "/home/circleci/project/frontend/package.json" }}
             - frontend-build-
       - run:
           name: Run backend unit tests
@@ -157,7 +157,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - backend-build-{{ checksum "/backend/package.json" }}
+            - backend-build-{{ checksum "/home/circleci/project/backend/package.json" }}
             - backend-build-
       - run:
           name: Run backend unit tests
