@@ -1,5 +1,10 @@
 ---
-- name: Copy files
-  copy:
-      src: "/root/project/backend/dist/"
-      dest: "/home/ubuntu/"
+- name: attempt to copy files, rollback if not
+  block:
+    - name: Copy and unarchive file
+      ansible.builtin.unarchive:
+        src: "root/project/backend/dist.tar.gz"
+        dest: "/home/ubuntu/"
+  rescue:
+    - name: Remove all files
+      shell: rm -rf /home/ubuntu/*
