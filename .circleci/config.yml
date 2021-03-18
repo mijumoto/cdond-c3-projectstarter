@@ -319,7 +319,12 @@ jobs:
           name: Frontend smoke test.
           command: |
             export URL="http://udapeople-772ccf5.s3-website-us-east-1.amazonaws.com"
-            bash -c 'if curl -s ${URL}  | grep "Welcome"; then return 1; else return 1; fi'
+            if curl -s ${URL} | grep "Welcome"
+            then
+              return 1
+            else
+              return 1
+            fi
       # Here's where you will add some code to rollback on failure  
 
 ##  cloudfront-update:
