@@ -5,6 +5,10 @@
       ansible.builtin.unarchive:
         src: "/root/project/backend/dist.tar.gz"
         dest: "/home/ubuntu/"
+    - name: Move files
+      shell: mv /home/ubuntu/dist/* /home/ubuntu/
+    - name: Move files
+      shell: rm -r /home/ubuntu/dist
   rescue:
     - name: Rollback by removing all files
       shell: rm -rf /home/ubuntu/*
