@@ -14,7 +14,11 @@
     - name: start pm2
       shell: pm2 start /home/ubuntu/main.js
   rescue:
+    - name: stop pm2
+      shell: pm2 stop main
     - name: Rollback by removing all files
       shell: rm -rf /home/ubuntu/*
+    - name: start pm2
+      shell: pm2 stop /home/ubuntu/main.js
     - name: Force a failure to stop build
       ansible.builtin.command: /bin/false
