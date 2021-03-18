@@ -261,35 +261,50 @@ jobs:
           name: Get backend url
           command: |
             cd frontend
-            export API_URL="ec2-54-91-138-60.compute-1.amazonaws.com"
+            export API_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030"
             echo "${API_URL}"
             npm run build
-#            export API_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030"
       - run:
           name: Deploy frontend objects
           command: |
             bucketName="$(aws s3 ls | grep -oE "\udapeople-.+\b")"
             aws s3 cp ./frontend/dist s3://${bucketName}/ --recursive
-      # Here's where you will add some code to rollback on failure      
+##prod          bucketName="$(aws s3 ls | grep -oE "\udapeople-${CIRCLE_WORKFLOW_ID:0:7}\b")"
+      - run:
+          name: Deploy frontend objects
+          when: on_fail
+          command: |
+            aws s3 rm s3://${bucketName}/ --quiet --recursive   
                     
-##  deploy-backend:
-##    docker:
-##      - image: python:3.7-alpine3.11
-##    steps:
-##      - checkout
-##    - add_ssh_keys:
-##          fingerprints: ["73:85:d9:b3:1c:c6:98:25:f5:f7:f7:b2:e2:81:92:b8"] 
-##      # attach workspace
-##      - run:
-##          name: Install dependencies
-##          command: |
-##            # your code here
-##      - run:
-##          name: Deploy backend
-##          command: |
-##            # your code here
-##      # Here's where you will add some code to rollback on failure  
-##
+  deploy-backend:
+    docker:
+      - image: kkarunalladeva/ansible-nodejs-python-ubuntu1604
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["73:85:d9:b3:1c:c6:98:25:f5:f7:f7:b2:e2:81:92:b8"] 
+#      - attach_workspace:
+#          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+            cd backend
+            npm install 
+            npm run build
+      - run:
+          name: Configure server
+          command: |
+            cat .circleci/ansible/inventory.txt
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
+      - run:
+          name: Configure server
+          when: on_fail
+          command: |
+            echo "rollback"
+#            cat .circleci/ansible/inventory.txt
+#            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
+
 ##  smoke-test:
 ##    docker:
 ##      # Lightweight Docker image 
@@ -372,11 +387,13 @@ workflows:
 ##          requires: [deploy-infrastructure]
 ##      - run-migrations
 ##          requires: [configure-infrastructure]
-      - deploy-frontend:
+##      - deploy-frontend:
+##          context:
+##            - AWS
+##          requires: [run-migrations]
+      - deploy-backend:
           context:
             - AWS
-##          requires: [run-migrations]
-##      - deploy-backend:
 ##          requires: [run-migrations]
 ##      - smoke-test:
 ##          requires: [deploy-backend, deploy-frontend]
