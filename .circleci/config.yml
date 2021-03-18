@@ -292,18 +292,12 @@ jobs:
             cd backend
             npm install 
             npm run build
+            tar czf dist.tar.gz dist
       - run:
           name: Configure server
           command: |
             cat .circleci/ansible/inventory.txt
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
-      - run:
-          name: Configure server
-          when: on_fail
-          command: |
-            echo "rollback"
-#            cat .circleci/ansible/inventory.txt
-#            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
 
 ##  smoke-test:
 ##    docker:
