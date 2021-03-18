@@ -325,7 +325,16 @@ jobs:
             else
               return 1
             fi
-      # Here's where you will add some code to rollback on failure  
+      - run:
+          name: Destroy environment ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
+          command: |
+            echo 'test'
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            echo 'test'
 
 ##  cloudfront-update:
 ##    docker:
