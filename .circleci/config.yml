@@ -215,8 +215,8 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["73:85:d9:b3:1c:c6:98:25:f5:f7:f7:b2:e2:81:92:b8"] 
-#      - attach_workspace:
-#          at: ~/
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -250,8 +250,8 @@ jobs:
       - image: cticti/aws-cli:node-alpine
     steps:
       - checkout
-#      - attach_workspace:
-#          at: ~/
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -269,7 +269,7 @@ jobs:
           command: |
             bucketName="$(aws s3 ls | grep -oE "\udapeople-.+\b")"
             aws s3 cp ./frontend/dist s3://${bucketName}/ --recursive
-##prod          bucketName="$(aws s3 ls | grep -oE "\udapeople-${CIRCLE_WORKFLOW_ID:0:7}\b")"
+            bucketName="$(aws s3 ls | grep -oE "\udapeople-${CIRCLE_WORKFLOW_ID:0:7}\b")"
       - run:
           name: Deploy frontend objects
           when: on_fail
@@ -283,8 +283,8 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["73:85:d9:b3:1c:c6:98:25:f5:f7:f7:b2:e2:81:92:b8"] 
-#      - attach_workspace:
-#          at: ~/
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -304,8 +304,8 @@ jobs:
       - image: 'cimg/base:stable'
     steps:
       - checkout
-#      - attach_workspace:
-#          at: ~/
+      - attach_workspace:
+          at: ~/
       - run:
           name: Get backend url
           command: |
@@ -313,15 +313,14 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            echo 'test'
-#curl ${BACKEND_URL} | return 0
+            curl ${BACKEND_URL}
       - run:
           name: Frontend smoke test.
           command: |
             export URL="http://udapeople-772ccf5.s3-website-us-east-1.amazonaws.com"
             if curl -s ${URL} | grep "Welcome"
             then
-              exit 1
+              exit 0
             else
               exit 1
             fi
@@ -374,37 +373,37 @@ jobs:
 workflows:
   default:
     jobs:
-##      - build-frontend
-##      - build-backend
-##      - test-frontend:
-##          requires: [build-frontend]
-##      - test-backend:
-##          requires: [build-backend]
-##      - scan-backend:
-##          requires: [build-backend]
-##      - scan-frontend:
-##          requires: [build-frontend]
-##      - deploy-infrastructure:
-##          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-##          filters:
-##            branches:
-##              only: [master]
-##          context:
-##            - AWS
-##      - configure-infrastructure:
-##          requires: [deploy-infrastructure]
-##      - run-migrations:
-##          requires: [configure-infrastructure]
-##      - deploy-frontend:
-##          context:
-##            - AWS
-##          requires: [run-migrations]
-##      - deploy-backend:
-##          context:
-##            - AWS
-##          requires: [run-migrations]
-      - smoke-test
-##          requires: [deploy-backend, deploy-frontend]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [master]
+          context:
+            - AWS
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          context:
+            - AWS
+          requires: [run-migrations]
+      - deploy-backend:
+          context:
+            - AWS
+          requires: [run-migrations]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
 ##      - cloudfront-update:
 ##          requires: [smoke-test]
 ##      - cleanup:
