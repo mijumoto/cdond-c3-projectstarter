@@ -260,11 +260,11 @@ jobs:
       - run:
           name: Get backend url
           command: |
-#            export API_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030"
             cd frontend
             export API_URL="ec2-54-91-138-60.compute-1.amazonaws.com"
             echo "${API_URL}"
             npm run build
+#            export API_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030"
       - run:
           name: Deploy frontend objects
           command: |
