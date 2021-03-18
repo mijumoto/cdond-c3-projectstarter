@@ -7,11 +7,14 @@
         dest: "/home/ubuntu/"
     - name: Move files
       shell: mv /home/ubuntu/dist/* /home/ubuntu/
-    - name: Move files
-      shell: rm -r /home/ubuntu/dist
+    - name: Remove dist folder
+      file:
+        path: /home/ubuntu/dist
+        state: absent
+    - name: start pm2
+      shell: pm2 start /home/ubuntu/main.js
   rescue:
     - name: Rollback by removing all files
       shell: rm -rf /home/ubuntu/*
-
     - name: Force a failure to stop build
       ansible.builtin.command: /bin/false
