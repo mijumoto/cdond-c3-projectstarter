@@ -9,7 +9,7 @@
     TYPEORM_CONNECTION: 'postgres'
     TYPEORM_MIGRATIONS_DIR: './src/migrations'
     TYPEORM_ENTITIES: './src/modules/domain/**/*.entity.ts'
-    TYPEORM_HOST: 'pgdb.cbv7959kpsjz.us-east-1.rds.amazonaws.com'
+    TYPEORM_HOST: 'udacity.cbv7959kpsjz.us-east-1.rds.amazonaws.com'
     TYPEORM_PORT: '5432'
     TYPEORM_USERNAME: 'postgres'
     TYPEORM_PASSWORD: 'password'
