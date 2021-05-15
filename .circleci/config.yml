@@ -147,8 +147,9 @@ jobs:
           name: Run backend unit tests
           command: |
              cd backend
+             npm install
              npm audit --audit-level=critical
-      - notify-failure
+#      - notify-failure
 
   scan-backend:
     docker:
@@ -163,8 +164,9 @@ jobs:
           name: Run backend unit tests
           command: |
              cd backend
+             npm install
              npm audit --audit-level=critical
-      - notify-failure
+#      - notify-failure
 
   deploy-infrastructure:
     docker:
