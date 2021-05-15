@@ -9,7 +9,7 @@ commands:
     description: Slack notification on failure
     steps:
       - slack/notify:
-          event: pass
+          event: fail
           custom: |
             {"blocks": [{"type": "section", "text": { "type": "mrkdwn", "text": "❌ $CIRCLE_JOB Failed in build #<$CIRCLE_BUILD_URL|$CIRCLE_BUILD_NUM> ($CIRCLE_BRANCH) of <https://$CIRCLE_REPOSITORY_URL|$CIRCLE_PROJECT_REPONAME>\n - $CIRCLE_USERNAME: $CIRCLE_TAG ($CIRCLE_SHA1)"}}]}
   notify-success:
@@ -149,7 +149,7 @@ jobs:
              cd backend
              npm install
              npm audit --audit-level=critical
-#      - notify-failure
+      - notify-failure
 
   scan-backend:
     docker:
@@ -166,7 +166,7 @@ jobs:
              cd backend
              npm install
              npm audit --audit-level=critical
-#      - notify-failure
+      - notify-failure
 
   deploy-infrastructure:
     docker:
@@ -375,37 +375,37 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
-##      - deploy-infrastructure:
-##           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-##           filters:
-##             branches:
-##               only: [master]
-##           context:
-##             - AWS
-##       - configure-infrastructure:
-##           requires: [deploy-infrastructure]
-##       - run-migrations:
-##           requires: [configure-infrastructure]
-##       - deploy-frontend:
-##           context:
-##             - AWS
-##           requires: [run-migrations]
-##       - deploy-backend:
-##           context:
-##             - AWS
-##           requires: [run-migrations]
-##       - smoke-test:
-##           requires: [deploy-backend, deploy-frontend]
+##       - build-frontend
+##       - build-backend
+##       - test-frontend:
+##           requires: [build-frontend]
+##       - test-backend:
+##           requires: [build-backend]
+##       - scan-backend:
+##           requires: [build-backend]
+##       - scan-frontend:
+##           requires: [build-frontend]
+     - deploy-infrastructure:
+#          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [master]
+          context:
+            - AWS
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          context:
+            - AWS
+          requires: [run-migrations]
+      - deploy-backend:
+          context:
+            - AWS
+          requires: [run-migrations]
+##      - smoke-test:
+##          requires: [deploy-backend, deploy-frontend]
 ##      - cloudfront-update:
 ##          requires: [smoke-test]
 ##      - cleanup:
