@@ -337,56 +337,56 @@ jobs:
           command: |
             echo 'test'
 
-##  cloudfront-update:
-##    docker:
-##      - image: 'amazon/aws-cli'
-##    steps:
-##      - checkout
-##      - run:
-##          name: Install dependencies
-##          command: |
-##            # your code here
-##      - run:
-##          name: Update cloudfront distribution
-##          command: |
-##            # your code here
-##      # Here's where you will add some code to rollback on failure  
+ cloudfront-update:
+   docker:
+     - image: 'amazon/aws-cli'
+   steps:
+     - checkout
+     - run:
+         name: Install dependencies
+         command: |
+           # your code here
+     - run:
+         name: Update cloudfront distribution
+         command: |
+           # your code here
+     # Here's where you will add some code to rollback on failure  
 ##
 ##cleanup:
-##    docker:
-##      # Docker image here
-##    steps:
-##      - checkout
-##      - run:
-##          name: Get old stack workflow id
-##          command: |
-##            # your code here
-##            export OldWorkflowID="the id here"
-##            export STACKS=[] #put the list of stacks here
-##      - run:
-##          name: Remove old stacks and files
-##          command: |
-##            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-##            then
-##              # your code here
-##            fi
-##            
+   docker:
+     # Docker image here
+   steps:
+     - checkout
+     - run:
+         name: Get old stack workflow id
+         command: |
+           # your code here
+           export OldWorkflowID="the id here"
+           export STACKS=[] #put the list of stacks here
+     - run:
+         name: Remove old stacks and files
+         command: |
+           if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+           then
+             # your code here
+           fi
+           
 
 workflows:
   default:
     jobs:
-##       - build-frontend
-##       - build-backend
-##       - test-frontend:
-##           requires: [build-frontend]
-##       - test-backend:
-##           requires: [build-backend]
-##       - scan-backend:
-##           requires: [build-backend]
-##       - scan-frontend:
-##           requires: [build-frontend]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+      - deploy-infrastructure:
 #          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-     - deploy-infrastructure:
           filters:
             branches:
               only: [master]
@@ -404,9 +404,9 @@ workflows:
           context:
             - AWS
           requires: [run-migrations]
-##      - smoke-test:
-##          requires: [deploy-backend, deploy-frontend]
-##      - cloudfront-update:
-##          requires: [smoke-test]
-##      - cleanup:
-##          requires: [cloudfront-update]
+     - smoke-test:
+         requires: [deploy-backend, deploy-frontend]
+     - cloudfront-update:
+         requires: [smoke-test]
+     - cleanup:
+         requires: [cloudfront-update]
