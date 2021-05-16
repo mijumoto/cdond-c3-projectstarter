@@ -220,6 +220,11 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+          name: Echo contents of inventory file
+          command: |
+            cat .circleci/ansible/inventory.txt
+            cat .project/.circleci/ansible/inventory.txt
+      - run:
           name: Install dependencies
           command: |
             apk add --update ansible
