@@ -244,6 +244,7 @@ jobs:
             cd backend
             cp .env.sample .env
             sed -i -e "s/TYPEORM_HOST=localhost/TYPEORM_HOST=$TYPEORM_HOST/g" .env
+            sed -i -e "s/5532/5432/g" .env
             cat .env
       - run:
           name: Run migrations
