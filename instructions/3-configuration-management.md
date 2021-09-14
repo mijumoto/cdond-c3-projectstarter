@@ -33,7 +33,7 @@ Please watch the [video walkthrough of setting up your secrets here](https://www
   - `AWS_DEFAULT_REGION`=(your default region in aws)
   - `TYPEORM_CONNECTION`=`postgres`
   - `TYPEORM_MIGRATIONS_DIR`=`./src/migrations`
-  - `TYPEORM_ENTITIES`=`./src/modules/domain/**/*.entity.ts`
+  - `TYPEORM_ENTITIES`=`./modules/domain/**/*.entity{.ts,.js}`
   - `TYPEORM_MIGRATIONS`=`./src/migrations/*.ts`
   - `TYPEORM_HOST`={your postgres database hostname in RDS}
   - `TYPEORM_PORT`=`5532` (or the port from RDS if it’s different)
