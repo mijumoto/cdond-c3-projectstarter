@@ -28,7 +28,7 @@ commands:
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
 
-  destroy-environment:
+  destroy_environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     steps:
       - run:
@@ -38,12 +38,9 @@ commands:
             aws s3 rm --recursive s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
-          
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    parameters:
-       Add parameter here     
     steps:
       - run:
           name: Revert migrations
