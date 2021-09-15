@@ -382,40 +382,40 @@ jobs:
       - destroy_environment
       - revert-migrations
 
-  cloudfront-update:
-    docker:
-      - image: 'amazon/aws-cli'
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-             your code here
-      - run:
-          name: Update cloudfront distribution
-          command: |
-             your code here
-      - destroy_environment
-      - revert-migrations
+#  cloudfront-update:
+#    docker:
+#      - image: 'amazon/aws-cli'
+#    steps:
+#      - checkout
+#      - run:
+#          name: Install dependencies
+#          command: |
+#             your code here
+#      - run:
+#          name: Update cloudfront distribution
+#          command: |
+#             your code here
+#      - destroy_environment
+#      - revert-migrations
 
-cleanup:
-  docker:
-      Docker image here
-   steps:
-     - checkout
-     - run:
-         name: Get old stack workflow id
-         command: |
-            your code here
-           export OldWorkflowID="the id here"
-           export STACKS=[] put the list of stacks here
-     - run:
-         name: Remove old stacks and files
-         command: |
-           if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-           then
-              your code here
-           fi
+#cleanup:
+#  docker:
+#      Docker image here
+#   steps:
+#     - checkout
+#     - run:
+#         name: Get old stack workflow id
+#         command: |
+#            your code here
+#           export OldWorkflowID="the id here"
+#           export STACKS=[] put the list of stacks here
+#     - run:
+#         name: Remove old stacks and files
+#         command: |
+#           if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+#           then
+#              your code here
+#           fi
            
 
 workflows:
