@@ -322,19 +322,32 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030/api/status"
+            echo "===Contents of Inventory file==="
+            cat .circleci/ansible/inventory.txt
+            echo "================================"
+            export BACKEND_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030/api/status"
       - run:
           name: Backend smoke test.
           command: |
-            curl ${BACKEND_URL}
+            echo ${BACKEND_URL}
+            if curl -s https://${BACKEND_URL}:3030/api/status
+            then
+              echo "PASSED"
+              return 1
+            else
+              echo "PASSED"
+              return 0
+            fi
       - run:
           name: Frontend smoke test.
           command: |
-            export URL="http://udapeople-772ccf5.s3-website-us-east-1.amazonaws.com"
+            export URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com"
             if curl -s ${URL} | grep "Welcome"
             then
+              echo "PASSED"
               exit 0
             else
+              echo "FAILED"
               exit 1
             fi
       - run:
@@ -386,35 +399,35 @@ cleanup:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
-      - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [master]
-          context:
-            - AWS
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          context:
-            - AWS
-          requires: [run-migrations]
-      - deploy-backend:
-          context:
-            - AWS
-          requires: [run-migrations]
+#      - build-frontend
+#      - build-backend
+#      - test-frontend:
+#          requires: [build-frontend]
+#      - test-backend:
+#          requires: [build-backend]
+#      - scan-backend:
+#          requires: [build-backend]
+#      - scan-frontend:
+#          requires: [build-frontend]
+#      - deploy-infrastructure:
+#          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+#          filters:
+#            branches:
+#              only: [master]
+#          context:
+#            - AWS
+#      - configure-infrastructure:
+#          requires: [deploy-infrastructure]
+#      - run-migrations:
+#          requires: [configure-infrastructure]
+#      - deploy-frontend:
+#          context:
+#            - AWS
+#          requires: [run-migrations]
+#      - deploy-backend:
+#          context:
+#            - AWS
+#          requires: [run-migrations]
       - smoke-test:
          requires: [deploy-backend, deploy-frontend]
 #      - cloudfront-update:
