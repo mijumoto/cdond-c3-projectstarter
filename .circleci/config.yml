@@ -11,14 +11,14 @@ commands:
       - slack/notify:
           event: fail
           custom: |
-            {"blocks": [{"type": "section", "text": { "type": "mrkdwn", "text": "❌ $CIRCLE_JOB Failed in build #<$CIRCLE_BUILD_URL|$CIRCLE_BUILD_NUM> ($CIRCLE_BRANCH) of <https://$CIRCLE_REPOSITORY_URL|$CIRCLE_PROJECT_REPONAME>\n - $CIRCLE_USERNAME: $CIRCLE_TAG ($CIRCLE_SHA1)"}}]}
+            {"blocks": [{"type": "section", "text": { "type": "mrkdwn", "text": "❌ $CIRCLE_JOB Failed in build <$CIRCLE_BUILD_URL|$CIRCLE_BUILD_NUM> ($CIRCLE_BRANCH) of <https://$CIRCLE_REPOSITORY_URL|$CIRCLE_PROJECT_REPONAME>\n - $CIRCLE_USERNAME: $CIRCLE_TAG ($CIRCLE_SHA1)"}}]}
   notify-success:
     description: Slack notification on pass
     steps:
       - slack/notify:
           event: pass
           custom: |
-            {"blocks": [{"type": "section", "text": { "type": "mrkdwn", "text": "✅ Build Succeded #<$CIRCLE_BUILD_URL|$CIRCLE_BUILD_NUM> ($CIRCLE_BRANCH) of <https://$CIRCLE_REPOSITORY_URL|$CIRCLE_PROJECT_REPONAME>\n - $CIRCLE_USERNAME: $CIRCLE_TAG ($CIRCLE_SHA1)"}}]}
+            {"blocks": [{"type": "section", "text": { "type": "mrkdwn", "text": "✅ Build Succeded <$CIRCLE_BUILD_URL|$CIRCLE_BUILD_NUM> ($CIRCLE_BRANCH) of <https://$CIRCLE_REPOSITORY_URL|$CIRCLE_PROJECT_REPONAME>\n - $CIRCLE_USERNAME: $CIRCLE_TAG ($CIRCLE_SHA1)"}}]}
   rollback:
     description: Delete Stacks
     steps:
@@ -28,36 +28,35 @@ commands:
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
 
-#  destroy-environment:
-#    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-#    parameters:
-#      # Add parameter here   
-#    steps:
-#      - run:
-#          name: Destroy environments
-#          when: on_fail
-#          command: |
-#            # Your code here
-#            exit 1
-#
-#  revert-migrations:
-#    description: Revert the last migration if successfully run in the current workflow.
-#    parameters:
-#      # Add parameter here     
-#    steps:
-#      - run:
-#          name: Revert migrations
-#          # Add when this will run
-#          command: |
-#            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-#            SUCCESS = 1
-#            if(( $SUCCESS==1 )); 
-#            then
-#            #  cd ~/project/backend
-#            #  npm install
-#            #  Add revert code here. You can find this in the Getting Started section.
-#              exit 1
-#            fi
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            aws s3 rm --recursive s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
+          
+
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+       Add parameter here     
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            # Check if there is a succesful migration to revert
+            export SUCCESS=$(curl -H "token: migration_${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
+            if(( $SUCCESS==1 )); 
+            then
+              cd ~/project/backend
+              npm install
+              npm run migrations:revert
+            fi
             
 jobs:
   build-frontend:
@@ -209,6 +208,7 @@ jobs:
           command: |
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
+      - destroy_environment
 
   configure-infrastructure:
     docker:
@@ -232,32 +232,56 @@ jobs:
           command: |
             cat .circleci/ansible/inventory.txt
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+      - destroy_environment
 
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - restore_cache:
+          keys: [build-backend]  
       - run:
           name: Add database host to .env
           command: |
             cd backend
             cp .env.sample .env
             sed -i -e "s/TYPEORM_HOST=localhost/TYPEORM_HOST=$TYPEORM_HOST/g" .env
-            sed -i -e "s/5532/5432/g" .env
-            cat .env
+            cat .env    
       - run:
           name: Run migrations
           command: |
             cd backend
             npm install
-            bash -c 'if npm run migrations | grep "has been executed successfully"; then MIGRATION=1; else MIGRATION=0; fi; curl -H "Content-Type: text/plain" -H "token: $MEMSTASH_TOKEN" --request PUT --data "$MIGRATION" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}'
+            touch migration.txt
+            npm run migrations >> migration.txt
+            cat migration.txt
+          no_output_timeout: 30m
       - run:
-          name: Revert migrations
-          when: on_fail
+          name: Send migration results to memstash
           command: |
             cd backend
-            npm run migrations:revert
+            cat migration.txt
+            result=0
+            if grep -q "has been executed successfully" migration.txt
+            then
+              result=1
+            fi
+            curl -H "Content-Type: text/plain" \
+            -H "token: migration_${CIRCLE_WORKFLOW_ID}" \
+            --request PUT \
+            --data ${result} https://api.memstash.io/values/migration
+            echo ${result}
+          no_output_timeout: 30m 
+      - run:
+          name: LogOnFail
+          when: on_fail
+          command: |
+            cat /home/circleci/.npm/_logs/*-debug.log
+            ls -la
+            cat backend/migration.txt          
+      - revert-migrations
+      - destroy_environment
 
   deploy-frontend:
     docker:
@@ -287,7 +311,9 @@ jobs:
           name: Deploy frontend objects
           when: on_fail
           command: |
-            aws s3 rm s3://${bucketName}/ --quiet --recursive   
+            aws s3 rm s3://${bucketName}/ --quiet --recursive
+      - destroy_environment
+      - revert-migrations
                     
   deploy-backend:
     docker:
@@ -311,6 +337,8 @@ jobs:
           command: |
             cat .circleci/ansible/inventory.txt
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
+      - destroy_environment
+      - revert-migrations
 
   smoke-test:
     docker:
@@ -346,21 +374,13 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
               echo "PASSED"
-              exit 0
+              exit 1
             else
               echo "FAILED"
               exit 1
             fi
-      - run:
-          name: Destroy environment ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
-          command: |
-            echo 'test'
-      - run:
-          name: Revert migrations
-          when: on_fail
-          command: |
-            echo 'test'
+      - destroy_environment
+      - revert-migrations
 
   cloudfront-update:
     docker:
@@ -370,30 +390,30 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            # your code here
+             your code here
       - run:
           name: Update cloudfront distribution
           command: |
-            # your code here
-     # Here's where you will add some code to rollback on failure  
+             your code here
+      Here's where you will add some code to rollback on failure  
 
 cleanup:
   docker:
-     # Docker image here
+      Docker image here
    steps:
      - checkout
      - run:
          name: Get old stack workflow id
          command: |
-           # your code here
+            your code here
            export OldWorkflowID="the id here"
-           export STACKS=[] #put the list of stacks here
+           export STACKS=[] put the list of stacks here
      - run:
          name: Remove old stacks and files
          command: |
            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
            then
-             # your code here
+              your code here
            fi
            
 
