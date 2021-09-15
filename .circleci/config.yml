@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@4.3.0
-  aws-cli: circleci/aws-cli@1.4.0
+  aws-cli: circleci/aws-cli@2.0.3
 
 commands:
   notify-failure:
@@ -19,21 +19,14 @@ commands:
           event: pass
           custom: |
             {"blocks": [{"type": "section", "text": { "type": "mrkdwn", "text": "✅ Build Succeded <$CIRCLE_BUILD_URL|$CIRCLE_BUILD_NUM> ($CIRCLE_BRANCH) of <https://$CIRCLE_REPOSITORY_URL|$CIRCLE_PROJECT_REPONAME>\n - $CIRCLE_USERNAME: $CIRCLE_TAG ($CIRCLE_SHA1)"}}]}
-  rollback:
-    description: Delete Stacks
-    steps:
-      - aws-cli/default:
-          event: fail
-          custom: |
-            aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
 
   destroy_environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     steps:
-      - aws-cli/default:
-          event: fail
-          custom: |
+      - aws-cli/setup
+      - run:
+          when: on_fail
+          command: |
             aws s3 rm --recursive s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
@@ -426,15 +419,19 @@ workflows:
       - scan-frontend:
           requires: [build-frontend]
       - deploy-infrastructure:
+          context:
+            - AWS
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
               only: [master]
+      - configure-infrastructure:
           context:
             - AWS
-      - configure-infrastructure:
           requires: [deploy-infrastructure]
       - run-migrations:
+          context:
+            - AWS
           requires: [configure-infrastructure]
       - deploy-frontend:
           context:
@@ -445,6 +442,8 @@ workflows:
             - AWS
           requires: [run-migrations]
       - smoke-test:
+         context:
+            - AWS
          requires: [deploy-backend, deploy-frontend]
 #      - cloudfront-update:
 #         requires: [smoke-test]
