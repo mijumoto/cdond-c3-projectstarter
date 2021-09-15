@@ -281,9 +281,8 @@ jobs:
       - run:
           name: Deploy frontend objects
           command: |
-            bucketName="$(aws s3 ls | grep -oE "\udapeople-.+\b")"
-            aws s3 cp ./frontend/dist s3://${bucketName}/ --recursive
             bucketName="$(aws s3 ls | grep -oE "\udapeople-${CIRCLE_WORKFLOW_ID:0:7}\b")"
+            aws s3 cp ./frontend/dist s3://${bucketName}/ --recursive
       - run:
           name: Deploy frontend objects
           when: on_fail
