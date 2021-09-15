@@ -29,7 +29,7 @@ commands:
             #unzip awscliv2.zip
             #./aws/install
             # Your code here
-            apk add --update py3-pip && pip3 install --upgrade pip && pip3 install awscli             
+            apt install python3-pip && pip3 install --upgrade pip && pip3 install awscli             
             aws s3 rm --recursive s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
@@ -237,6 +237,8 @@ jobs:
           command: |
             cd backend
             cp .env.sample .env
+            echo $TYPEORM_HOST
+            echo $TYPEORM_PASSWORD
             sed -i -e "s/TYPEORM_HOST=localhost/TYPEORM_HOST=$TYPEORM_HOST/g" .env
             sed -i -e "s/TYPEORM_PORT=5532/TYPEORM_PORT=5432/g" .env
             sed -i -e "s/TYPEORM_PASSWORD=password/TYPEORM_PASSWORD=$TYPEORM_PASSWORD/g" .env
@@ -248,7 +250,6 @@ jobs:
             npm install
             touch migration.txt
             npm run migrations >> migration.txt
-            cat migration.txt
           no_output_timeout: 30m
       - run:
           name: Send migration results to memstash
