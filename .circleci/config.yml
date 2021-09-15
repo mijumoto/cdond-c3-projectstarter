@@ -326,6 +326,7 @@ jobs:
             cat .circleci/ansible/inventory.txt
             echo "================================"
             export BACKEND_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030/api/status"
+            echo $BACKEND_URL
       - run:
           name: Backend smoke test.
           command: |
@@ -333,10 +334,10 @@ jobs:
             if curl -s https://${BACKEND_URL}:3030/api/status
             then
               echo "PASSED"
-              return 1
+              exit 1
             else
               echo "PASSED"
-              return 0
+              exit 0
             fi
       - run:
           name: Frontend smoke test.
