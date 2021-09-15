@@ -31,10 +31,9 @@ commands:
   destroy_environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     steps:
-      - run:
-          name: Destroy environments
-          when: on_fail
-          command: |
+      - aws-cli/default:
+          event: fail
+          custom: |
             aws s3 rm --recursive s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
             aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
@@ -177,6 +176,7 @@ jobs:
               --tags project=udapeople \
               --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+          no_output_timeout: 30m
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -185,6 +185,7 @@ jobs:
               --tags project=udapeople \
               --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+          no_output_timeout: 30m
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -199,12 +200,6 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - run:
-          name: Delete front and back stacks if CF fails
-          when: on_fail
-          command: |
-            aws cloudformation delete-stack --stack-name "uda-front-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws cloudformation delete-stack --stack-name "uda-back-${CIRCLE_WORKFLOW_ID:0:7}"
       - destroy_environment
 
   configure-infrastructure:
@@ -229,6 +224,7 @@ jobs:
           command: |
             cat .circleci/ansible/inventory.txt
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+          no_output_timeout: 30m
       - destroy_environment
 
   run-migrations:
@@ -244,6 +240,7 @@ jobs:
             cd backend
             cp .env.sample .env
             sed -i -e "s/TYPEORM_HOST=localhost/TYPEORM_HOST=$TYPEORM_HOST/g" .env
+            sed -i -e "s/TYPEORM_PORT=5532/TYPEORM_PORT=5432/g" .env
             cat .env    
       - run:
           name: Run migrations
