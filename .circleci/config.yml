@@ -239,6 +239,7 @@ jobs:
             cp .env.sample .env
             sed -i -e "s/TYPEORM_HOST=localhost/TYPEORM_HOST=$TYPEORM_HOST/g" .env
             sed -i -e "s/TYPEORM_PORT=5532/TYPEORM_PORT=5432/g" .env
+            sed -i -e "s/TYPEORM_PASSWORD=password/TYPEORM_PASSWORD=$TYPEORM_PASSWORD/g" .env
             cat .env    
       - run:
           name: Run migrations
