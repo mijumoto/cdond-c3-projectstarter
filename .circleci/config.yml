@@ -350,10 +350,10 @@ jobs:
             if curl -s https://${BACKEND_URL}:3030/api/status
             then
               echo "PASSED"
-              exit 1
-            else
-              echo "PASSED"
               exit 0
+            else
+              echo "FAILED"
+              exit 1
             fi
       - run:
           name: Frontend smoke test.
@@ -362,7 +362,7 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
               echo "PASSED"
-              exit 1
+              exit 0
             else
               echo "FAILED"
               exit 1
@@ -370,21 +370,40 @@ jobs:
       - destroy_environment
       - revert-migrations
 
-#  cloudfront-update:
-#    docker:
-#      - image: 'amazon/aws-cli'
-#    steps:
-#      - checkout
-#      - run:
-#          name: Install dependencies
-#          command: |
-#             your code here
-#      - run:
-#          name: Update cloudfront distribution
-#          command: |
-#             your code here
-#      - destroy_environment
-#      - revert-migrations
+  cloudfront-update:
+    docker:
+      - image: 'amazon/aws-cli'
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum -y install tar gzip
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            export OldWorkflowID=$(aws cloudformation list-exports \
+            --query "Exports[?Name==\`WorkflowID\`].Value" \
+            --no-paginate --output text)
+            
+            export STACKS=$(aws cloudformation list-stacks \
+            --query "StackSummaries[*].StackName" \
+            --stack-status-filter CREATE_COMPLETE \
+            --no-paginate --output text)
+            
+            echo OldWorkflowID: "$OldWorkflowID"
+            echo STACKS: "$STACKS" 
+            aws cloudformation deploy \
+            --template-file /root/project/.circleci/files/cloudfront.yml \
+            --stack-name udapeople-cloudfront \
+            --parameter-overrides WorkflowID="<< pipeline.parameters.workflow-id >>" \
+            --tags project=udapeople
+            curl -H "Content-Type: text/plain" -H "token: OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
+            --request PUT \
+            --data "$OldWorkflowID" https://api.memstash.io/values/OldWorkflowID           
+          no_output_timeout: 30m
+      - revert-migrations
+      - destroy_environment
 
 #cleanup:
 #  docker:
@@ -446,7 +465,7 @@ workflows:
          requires: [deploy-backend, deploy-frontend]
          context:
             - AWS
-#      - cloudfront-update:
-#         requires: [smoke-test]
+      - cloudfront-update:
+         requires: [smoke-test]
 #      - cleanup:
 #         requires: [cloudfront-update]
