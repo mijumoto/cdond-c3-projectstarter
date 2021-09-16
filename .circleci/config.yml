@@ -396,7 +396,7 @@ jobs:
             aws cloudformation deploy \
             --template-file /root/project/.circleci/files/cloudfront.yml \
             --stack-name udapeople-cloudfront \
-            --parameter-overrides WorkflowID="<< pipeline.parameters.workflow-id >>" \
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}" \
             --tags project=udapeople
             curl -H "Content-Type: text/plain" -H "token: OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
             --request PUT \
