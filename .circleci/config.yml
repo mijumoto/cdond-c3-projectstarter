@@ -336,18 +336,14 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Get backend url
+          name: Backend smoke test.
           command: |
             echo "===Contents of Inventory file==="
             cat .circleci/ansible/inventory.txt
             echo "================================"
             export BACKEND_URL="http://$(cat .circleci/ansible/inventory.txt | grep -oE "\bec2.+\b"):3030/api/status"
             echo $BACKEND_URL
-      - run:
-          name: Backend smoke test.
-          command: |
-            echo ${BACKEND_URL}
-            if curl -s https://${BACKEND_URL}:3030/api/status
+            if curl -s ${BACKEND_URL}
             then
               echo "PASSED"
               exit 0
