@@ -463,7 +463,7 @@ workflows:
             - AWS
       - cloudfront-update:
          requires: [smoke-test]
-          context:
+         context:
             - AWS
 #      - cleanup:
 #         requires: [cloudfront-update]
