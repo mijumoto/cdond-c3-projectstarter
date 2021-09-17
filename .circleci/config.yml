@@ -401,26 +401,37 @@ jobs:
       - revert-migrations
       - destroy_environment
 
-#cleanup:
-#  docker:
-#      Docker image here
-#   steps:
-#     - checkout
-#     - run:
-#         name: Get old stack workflow id
-#         command: |
-#            your code here
-#           export OldWorkflowID="the id here"
-#           export STACKS=[] put the list of stacks here
-#     - run:
-#         name: Remove old stacks and files
-#         command: |
-#           if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-#           then
-#              your code here
-#           fi
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Get old stack workflow id
+          command: |
+            OldWorkflowID=$(curl -H "token: OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
+            --request GET https://api.memstash.io/values/OldWorkflowID)
+            export STACKS=$(aws cloudformation list-stacks \
+            --query "StackSummaries[*].StackName" \
+            --stack-status-filter CREATE_COMPLETE \
+            --no-paginate --output text)
+            echo OldWorkflowID: "$OldWorkflowID"
+            echo STACKS: "$STACKS" 
+      - run:
+          name: Remove old stacks and files
+          command: |
+            if [ ! -z $OldWorkflowID ]
+            then
+              echo "Cleanup old stack!"
+              aws s3 rm s3://udapeople-${OldWorkflowID} --recursive
+              aws s3 rb s3://udapeople-${OldWorkflowID} --force
+              aws cloudformation delete-stack --stack-name uda-back-${OldWorkflowID}
+              aws cloudformation delete-stack --stack-name uda-front-${OldWorkflowID}
+            else
+              echo "No old stacks existed"
+            fi
+          no_output_timeout: 30m
            
-
 workflows:
   default:
     jobs:
@@ -465,5 +476,7 @@ workflows:
          requires: [smoke-test]
          context:
             - AWS
-#      - cleanup:
-#         requires: [cloudfront-update]
+      - cleanup:
+         requires: [cloudfront-update]
+         context:
+            - AWS
