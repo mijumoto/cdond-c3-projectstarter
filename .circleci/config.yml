@@ -346,7 +346,7 @@ jobs:
             if curl -s ${BACKEND_URL}
             then
               echo "PASSED"
-              exit 0
+              exit 1
             else
               echo "FAILED"
               exit 1
