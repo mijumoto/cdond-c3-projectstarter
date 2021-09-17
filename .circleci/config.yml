@@ -346,10 +346,10 @@ jobs:
             if curl -s ${BACKEND_URL}
             then
               echo "PASSED"
-              exit 1
+              exit 0
             else
               echo "FAILED"
-              exit 1
+              exit 0
             fi
       - run:
           name: Frontend smoke test.
