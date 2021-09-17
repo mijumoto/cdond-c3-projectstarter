@@ -423,10 +423,10 @@ jobs:
             if [ ! -z $OldWorkflowID ]
             then
               echo "Cleanup old stack!"
-              aws s3 rm s3://udapeople-${OldWorkflowID} --recursive
-              aws s3 rb s3://udapeople-${OldWorkflowID} --force
-              aws cloudformation delete-stack --stack-name uda-back-${OldWorkflowID}
-              aws cloudformation delete-stack --stack-name uda-front-${OldWorkflowID}
+              aws s3 rm s3://udapeople-${OldWorkflowID:0:7} --recursive
+              aws s3 rb s3://udapeople-${OldWorkflowID:0:7} --force
+              aws cloudformation delete-stack --stack-name uda-back-${OldWorkflowID:0:7}
+              aws cloudformation delete-stack --stack-name uda-front-${OldWorkflowID:0:7}
             else
               echo "No old stacks existed"
             fi
