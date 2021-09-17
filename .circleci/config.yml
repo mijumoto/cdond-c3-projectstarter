@@ -409,7 +409,7 @@ jobs:
       - run:
           name: Get old stack workflow id
           command: |
-            OldWorkflowID=$(curl -H "token: OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
+            export OldWorkflowID=$(curl -H "token: OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
             --request GET https://api.memstash.io/values/OldWorkflowID)
             export STACKS=$(aws cloudformation list-stacks \
             --query "StackSummaries[*].StackName" \
@@ -420,6 +420,7 @@ jobs:
       - run:
           name: Remove old stacks and files
           command: |
+            echo $OldWorkflowID
             if [ ! -z $OldWorkflowID ]
             then
               echo "Cleanup old stack!"
