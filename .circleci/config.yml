@@ -241,9 +241,9 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            #npm install
+            npm install
             touch migration.txt
-            #npm run migrations >> migration.txt
+            npm run migrations >> migration.txt
           no_output_timeout: 30m
       - run:
           name: Send migration results to memstash
@@ -349,7 +349,7 @@ jobs:
               exit 0
             else
               echo "FAILED"
-              exit 0
+              exit 1
             fi
       - run:
           name: Frontend smoke test.
@@ -388,12 +388,14 @@ jobs:
             --no-paginate --output text)
             
             echo OldWorkflowID: "$OldWorkflowID"
-            echo STACKS: "$STACKS" 
+            echo STACKS: "$STACKS"
+
             aws cloudformation deploy \
             --template-file /root/project/.circleci/files/cloudfront.yml \
             --stack-name udapeople-cloudfront \
-            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}" \
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
             --tags project=udapeople
+            
             curl -H "Content-Type: text/plain" -H "token: OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
             --request PUT \
             --data "$OldWorkflowID" https://api.memstash.io/values/OldWorkflowID           
@@ -407,7 +409,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Get old stack workflow id
+          name: Cleanup old stack if exists
           command: |
             export OldWorkflowID=$(curl -H "token: OldWorkflowID-${CIRCLE_WORKFLOW_ID}" \
             --request GET https://api.memstash.io/values/OldWorkflowID)
