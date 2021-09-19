@@ -78,7 +78,7 @@
     "@types/redux-form": "^8.1.4",
     "axios": "^0.21.1",
     "axui-contextmenu": "^0.4.0",
-    "classnames": "^2.3.0",
+    "classnames": "^2.3.1",
     "connected-react-router": "^4.5.0",
     "dotenv": "^8.0.0",
     "dotenv-webpack": "^1.7.0",
